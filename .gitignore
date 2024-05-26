@@ -2,3 +2,4 @@ venv
 calculator_with_oop/calculator.db
 calculator.db
 .idea
+calculator_with_oop/__pycache__/
