@@ -4,7 +4,6 @@ import math
 import tkinter as tk
 from tkinter import messagebox
 
-
 conn = sqlite3.connect('calculator.db')
 c = conn.cursor()
 
@@ -43,7 +42,7 @@ def factorial():
 
 
 def sum_of_squares(n):
-    return sum(i**2 for i in range(1, n))
+    return sum(i ** 2 for i in range(1, n))
 
 
 def calculate_sum():
@@ -142,11 +141,12 @@ def show_statistics():
 
     total_additions = c.execute("SELECT COUNT(*) FROM operations WHERE operation = 'addition'").fetchone()[0]
     total_subtractions = c.execute("SELECT COUNT(*) FROM operations WHERE operation = 'subtraction'").fetchone()[0]
-    total_multiplications = c.execute("SELECT COUNT(*) FROM operations WHERE operation = 'multiplication'").fetchone()[0]
+    total_multiplications = c.execute("SELECT COUNT(*) FROM operations WHERE operation = 'multiplication'").fetchone()[
+        0]
     total_divisions = c.execute("SELECT COUNT(*) FROM operations WHERE operation = 'division'").fetchone()[0]
 
     total_sum_of_squares = c.execute("SELECT COUNT(*) FROM operations WHERE operation = 'sum_of_squares'").fetchone()[0]
-    total_composite = c.execute("SELECT COUNT(*) FROM operations WHERE operation = 'calculation'").fetchone()[0]
+    total_composite = c.execute("SELECT COUNT(*) FROM operations WHERE operation = 'calculation' AND operands LIKE '%(%' AND operands LIKE '%)%'").fetchone()[0]
     total_to_power = c.execute("SELECT COUNT(*) FROM operations WHERE operation = 'exponentiation'").fetchone()[0]
     total_percentage = c.execute("SELECT COUNT(*) FROM operations WHERE operation = 'percentage'").fetchone()[0]
     total_factorial = c.execute("SELECT COUNT(*) FROM operations WHERE operation = 'factorial'").fetchone()[0]
@@ -169,6 +169,7 @@ def show_statistics():
         Total Exponential:       {total_to_power}
         Total Percentage:        {total_percentage}
         Total Composite:         {total_composite}
+        Total Sum Of Square:    {total_sum_of_squares}
 
     --------------------------------------
         Average Elementary Operations: {avg_elementary_operations:.2f}
@@ -207,7 +208,7 @@ btn_l_par = tk.Button(window, text="(", command=lambda: add_to_field("("), width
 btn_l_par.grid(row=6, column=1)
 
 btn_l_bra = tk.Button(window, text="[", command=lambda: add_to_field("("), width=5, font=("Times New Roman", 14))
-btn_l_bra.grid(row=7,column=1)
+btn_l_bra.grid(row=7, column=1)
 
 btn_r_bra = tk.Button(window, text="]", command=lambda: add_to_field("]"), width=5, font=("Times New Roman", 14))
 btn_r_bra.grid(row=7, column=2)

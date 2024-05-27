@@ -1,4 +1,5 @@
 import math
+import os
 import tkinter as tk
 from tkinter import messagebox
 
@@ -15,6 +16,9 @@ class Calculator(object):
         self.field = tk.Text(self.window, height=2, width=21, font=("Times New Roman", 20))
         self.draw_calculator()
 
+    # If you want to reset the db on each Run.
+    # if os.path.exists('calculator.db'):
+    #     os.remove('calculator.db')
 
     def log_operation(self, operation, operands, result):
         self.db.log_operation(operation, operands, result)
@@ -24,6 +28,25 @@ class Calculator(object):
         self.field_text += "!"
         self.field.delete("1.0", "end")
         self.field.insert("1.0", self.field_text)
+
+    def sum_of_squares(self, n):
+        return sum(i ** 2 for i in range(1, n))
+
+    def calculate_sum(self):
+        try:
+            n = int(self.field_text)
+            result = self.sum_of_squares(n)
+            self.log_operation('sum_of_squares', str(n), str(result))
+            self.field.delete("1.0", "end")
+            self.field.insert("1.0", result)
+            self.field_text = str(result)
+        except Exception as e:
+            error_message = str(e)
+            self.log_operation('error', self.field_text, error_message)
+            self.field.delete("1.0", "end")
+            self.field.insert("1.0", "Error: " + error_message)
+            self.field_text = ""
+            messagebox.showerror('Error', error_message)
 
     def calculate(self):
         expression = self.field_text
@@ -109,8 +132,11 @@ class Calculator(object):
             "SELECT COUNT(*) FROM operations WHERE operation = 'division'").fetchone()[0]
 
         # Other operations
+        total_sum_to_square = \
+            self.db.cursor.execute("SELECT COUNT(*) FROM operations WHERE operation = 'sum_of_squares'").fetchone()[0]
         total_composite = \
-            self.db.cursor.execute("SELECT COUNT(*) FROM operations WHERE operation = 'calculation'").fetchone()[0]
+            self.db.cursor.execute(
+                "SELECT COUNT(*) FROM operations WHERE operation = 'calculation' AND operands LIKE '%(%' AND operands LIKE '%)%'").fetchone()[0]
         total_to_power = \
             self.db.cursor.execute("SELECT COUNT(*) FROM operations WHERE operation = 'exponentiation'").fetchone()[0]
         total_percentage = \
@@ -121,7 +147,7 @@ class Calculator(object):
         total_elementary_operations = total_additions + total_subtractions + total_multiplications + total_divisions
         print(f" Total elementary operations: {total_elementary_operations}")
 
-        total_sum_other_operations = total_to_power + total_percentage + total_factorial + total_composite
+        total_sum_other_operations = total_to_power + total_percentage + total_factorial + total_composite + total_sum_to_square
         print(f" Total other operations: {total_sum_other_operations}")
 
         total_sum_of_all_operations = total_elementary_operations + total_sum_other_operations
@@ -141,6 +167,7 @@ class Calculator(object):
                 Total Exponential:      {total_to_power}
                 Total Percentage:         {total_percentage}
                 Total Composite:         {total_composite}
+                Total Σ x^2:         {total_sum_to_square}
 
             --------------------------------------
                 Average Elementary Operations: {avg_elementary_operations:.2f}
@@ -201,7 +228,7 @@ class Calculator(object):
 
         btn_equals = tk.Button(self.window, text="=", command=lambda: self.calculate(), width=10,
                                font=("Times New Roman", 14))
-        btn_equals.grid(row=8, column=2, columnspan=2)
+        btn_equals.grid(row=9, column=3, columnspan=2)
         btn_point = tk.Button(self.window, text=".", command=lambda: self.add_to_field("."), width=5,
                               font=("Times New Roman", 14))
         btn_point.grid(row=5, column=2)
@@ -230,9 +257,13 @@ class Calculator(object):
                             font=("Times New Roman", 14))
         btn_mod.grid(row=5, column=3)
 
-        btn_stats = tk.Button(self.window, text="Show Stats", command=lambda: self.show_statistics(), width=20,
+        btn_sum = tk.Button(self.window, text="Σ x^2", command=lambda: self.calculate_sum(), width=5,
+                            font=("Times New Roman", 14))
+        btn_sum.grid(row=7, column=3)
+
+        btn_stats = tk.Button(self.window, text="Show Stats", command=lambda: self.show_statistics(), width=10,
                               font=("Times New Roman", 14))
-        btn_stats.grid(row=9, column=1, columnspan=4)
+        btn_stats.grid(row=9, column=1, columnspan=2)
 
         self.window.mainloop()
 
