@@ -4,7 +4,7 @@
 The code inside the `calculator` folder follows an Object-Oriented Programming (OOP) approach.
 
 ### Main Files
-- **`calculator.py`**: Contains the main class `CalculatorApp` which handles the GUI and the calculation logic.
+- **`main.py`**: Contains the main class `CalculatorApp` which handles the GUI and the calculation logic.
 - **`database.py`**: Contains the class `Database` for handling database operations.
 
 ### Main Classes
