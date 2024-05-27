@@ -1,5 +1,4 @@
 import math
-import os
 import tkinter as tk
 from tkinter import messagebox
 
@@ -16,9 +15,6 @@ class Calculator(object):
         self.field = tk.Text(self.window, height=2, width=21, font=("Times New Roman", 20))
         self.draw_calculator()
 
-    # If you want to reset the db on each Run.
-    # if os.path.exists('calculator.db'):
-    #     os.remove('calculator.db')
 
     def log_operation(self, operation, operands, result):
         self.db.log_operation(operation, operands, result)
