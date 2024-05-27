@@ -2,6 +2,7 @@ import sqlite3
 import os
 import math
 import tkinter as tk
+from tkinter import messagebox
 
 # Remove the existing database if it exists on run
 # if os.path.exists('calculator.db'):
@@ -48,17 +49,39 @@ def calculate():
     global field_text, factorial_expression
     expression = field_text
     try:
-        if "%" in expression:
-            parts = expression.split("%")
+        expression = expression.replace("[", "(").replace("]", ")")
+        if "(" in expression or ")" in expression:
+            result = str(eval(expression))
+            log_operation('calculation', expression, result)
+        elif "+" in expression:
+            parts = expression.split("+", 1)
+            result = str(eval(parts[0]) + eval(parts[1]))
+            log_operation('addition', parts[0] + ',' + parts[1], result)
+        elif "-" in expression:
+            parts = expression.split("-", 1)
+            result = str(eval(parts[0]) - eval(parts[1]))
+            log_operation('subtraction', parts[0] + ',' + parts[1], result)
+        elif "*" in expression:
+            parts = expression.split("*", 1)
+            result = str(eval(parts[0]) * eval(parts[1]))
+            log_operation('multiplication', parts[0] + ',' + parts[1], result)
+        elif "/" in expression:
+            parts = expression.split("/", 1)
+            result = str(eval(parts[0]) / eval(parts[1]))
+            log_operation('division', parts[0] + ',' + parts[1], result)
+        elif "%" in expression:
+            parts = expression.split("%", 1)
             result = str(eval(parts[0]) * eval(parts[1]) / 100)
-            log_operation('percentage', field_text, result)
+            log_operation('percentage', parts[0] + ',' + parts[1], result)
         elif "!" in expression:
-            result = str(math.factorial(int(factorial_expression)))
-            log_operation('factorial', factorial_expression, result)
+            # Handle factorial specifically
+            base = expression.replace("!", "")
+            result = str(math.factorial(int(base)))
+            log_operation('factorial', base, result)
         elif "^" in expression:
-            parts = expression.split("^")
+            parts = expression.split("^", 1)
             result = str(eval(parts[0]) ** eval(parts[1]))
-            log_operation('to_power', parts[0] + "^" + parts[1], result)
+            log_operation('exponentiation', parts[0] + "," + parts[1], result)
         else:
             result = str(eval(expression))
             log_operation('calculation', expression, result)
@@ -75,6 +98,7 @@ def calculate():
         field.insert("1.0", "Error: " + error_message)
         field_text = ""
         factorial_expression = ""
+        messagebox.showerror('Error', str(e))
 
 
 def clear():
@@ -96,17 +120,18 @@ def show_statistics():
     stats_window.title("Statistics")
     stats_window.geometry("400x400")
 
-    total_additions = c.execute("SELECT COUNT(*) FROM operations WHERE operation = 'calculation' AND operands LIKE '%+%'").fetchone()[0]
-    total_subtractions = c.execute("SELECT COUNT(*) FROM operations WHERE operation = 'calculation' AND operands LIKE '%-%'").fetchone()[0]
-    total_multiplications = c.execute("SELECT COUNT(*) FROM operations WHERE operation = 'calculation' AND operands LIKE '%*%' AND operands NOT LIKE '%**%'").fetchone()[0]
-    total_divisions = c.execute("SELECT COUNT(*) FROM operations WHERE operation = 'calculation' AND operands LIKE '%/%'").fetchone()[0]
+    total_additions = c.execute("SELECT COUNT(*) FROM operations WHERE operation = 'addition'").fetchone()[0]
+    total_subtractions = c.execute("SELECT COUNT(*) FROM operations WHERE operation = 'subtraction'").fetchone()[0]
+    total_multiplications = c.execute("SELECT COUNT(*) FROM operations WHERE operation = 'multiplication'").fetchone()[0]
+    total_divisions = c.execute("SELECT COUNT(*) FROM operations WHERE operation = 'division'").fetchone()[0]
 
-    total_to_power = c.execute("SELECT COUNT(*) FROM operations WHERE operation = 'to_power'").fetchone()[0]
+    total_composite = c.execute("SELECT COUNT(*) FROM operations WHERE operation = 'calculation'").fetchone()[0]
+    total_to_power = c.execute("SELECT COUNT(*) FROM operations WHERE operation = 'exponentiation'").fetchone()[0]
     total_percentage = c.execute("SELECT COUNT(*) FROM operations WHERE operation = 'percentage'").fetchone()[0]
     total_factorial = c.execute("SELECT COUNT(*) FROM operations WHERE operation = 'factorial'").fetchone()[0]
 
     total_elementary_operations = total_additions + total_subtractions + total_multiplications + total_divisions
-    total_sum_other_operations = total_to_power + total_percentage + total_factorial
+    total_sum_other_operations = total_to_power + total_percentage + total_factorial + total_composite
     total_sum_of_all_operations = total_elementary_operations + total_sum_other_operations
 
     avg_elementary_operations = total_elementary_operations / total_sum_of_all_operations if total_sum_of_all_operations > 0 else 0
@@ -121,7 +146,8 @@ def show_statistics():
 
         Total Factorial:         {total_factorial}
         Total Exponential:       {total_to_power}
-        Total Percentage:         {total_percentage}
+        Total Percentage:        {total_percentage}
+        Total Composite:         {total_composite}
 
     --------------------------------------
         Average Elementary Operations: {avg_elementary_operations:.2f}
@@ -158,10 +184,17 @@ btn_9 = tk.Button(window, text="9", command=lambda: add_to_field(9), width=5, fo
 btn_9.grid(row=2, column=3)
 btn_l_par = tk.Button(window, text="(", command=lambda: add_to_field("("), width=5, font=("Times New Roman", 14))
 btn_l_par.grid(row=6, column=1)
+
+btn_l_bra = tk.Button(window, text="[", command=lambda: add_to_field("("), width=5, font=("Times New Roman", 14))
+btn_l_bra.grid(row=7,column=1)
+
+btn_r_bra = tk.Button(window, text="]", command=lambda: add_to_field("]"), width=5, font=("Times New Roman", 14))
+btn_r_bra.grid(row=7, column=2)
+
 btn_r_par = tk.Button(window, text=")", command=lambda: add_to_field(")"), width=5, font=("Times New Roman", 14))
 btn_r_par.grid(row=6, column=2)
 btn_equals = tk.Button(window, text="=", command=lambda: calculate(), width=10, font=("Times New Roman", 14))
-btn_equals.grid(row=7, column=2, columnspan=2)
+btn_equals.grid(row=8, column=2, columnspan=2)
 btn_point = tk.Button(window, text=".", command=lambda: add_to_field("."), width=5, font=("Times New Roman", 14))
 btn_point.grid(row=5, column=2)
 btn_clear = tk.Button(window, text="C", command=lambda: clear(), width=5, font=("Times New Roman", 14))
@@ -183,7 +216,7 @@ btn_mod.grid(row=5, column=3)
 
 btn_stats = tk.Button(window, text="Show Stats", command=lambda: show_statistics(), width=20,
                       font=("Times New Roman", 14))
-btn_stats.grid(row=8, column=1, columnspan=4)
+btn_stats.grid(row=9, column=1, columnspan=4)
 
 window.mainloop()
 
