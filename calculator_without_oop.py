@@ -42,10 +42,33 @@ def factorial():
     field.insert("1.0", field_text)
 
 
+def sum_of_squares(n):
+    return sum(i**2 for i in range(1, n))
+
+
+def calculate_sum():
+    global field_text
+    try:
+        n = int(field_text)
+        result = sum_of_squares(n)
+        log_operation('sum_of_squares', str(n), str(result))
+        field.delete("1.0", "end")
+        field.insert("1.0", result)
+        field_text = str(result)
+    except Exception as e:
+        error_message = str(e)
+        log_operation('error', field_text, error_message)
+        field.delete("1.0", "end")
+        field.insert("1.0", "Error: " + error_message)
+        field_text = ""
+        messagebox.showerror('Error', error_message)
+
+
 def calculate():
     global field_text, factorial_expression
     expression = field_text
     try:
+
         expression = expression.replace("[", "(").replace("]", ")")
         if "(" in expression or ")" in expression:
             result = str(eval(expression))
@@ -122,13 +145,14 @@ def show_statistics():
     total_multiplications = c.execute("SELECT COUNT(*) FROM operations WHERE operation = 'multiplication'").fetchone()[0]
     total_divisions = c.execute("SELECT COUNT(*) FROM operations WHERE operation = 'division'").fetchone()[0]
 
+    total_sum_of_squares = c.execute("SELECT COUNT(*) FROM operations WHERE operation = 'sum_of_squares'").fetchone()[0]
     total_composite = c.execute("SELECT COUNT(*) FROM operations WHERE operation = 'calculation'").fetchone()[0]
     total_to_power = c.execute("SELECT COUNT(*) FROM operations WHERE operation = 'exponentiation'").fetchone()[0]
     total_percentage = c.execute("SELECT COUNT(*) FROM operations WHERE operation = 'percentage'").fetchone()[0]
     total_factorial = c.execute("SELECT COUNT(*) FROM operations WHERE operation = 'factorial'").fetchone()[0]
 
     total_elementary_operations = total_additions + total_subtractions + total_multiplications + total_divisions
-    total_sum_other_operations = total_to_power + total_percentage + total_factorial + total_composite
+    total_sum_other_operations = total_to_power + total_percentage + total_factorial + total_composite + total_sum_of_squares
     total_sum_of_all_operations = total_elementary_operations + total_sum_other_operations
 
     avg_elementary_operations = total_elementary_operations / total_sum_of_all_operations if total_sum_of_all_operations > 0 else 0
@@ -191,7 +215,7 @@ btn_r_bra.grid(row=7, column=2)
 btn_r_par = tk.Button(window, text=")", command=lambda: add_to_field(")"), width=5, font=("Times New Roman", 14))
 btn_r_par.grid(row=6, column=2)
 btn_equals = tk.Button(window, text="=", command=lambda: calculate(), width=10, font=("Times New Roman", 14))
-btn_equals.grid(row=8, column=2, columnspan=2)
+btn_equals.grid(row=9, column=3, columnspan=2)
 btn_point = tk.Button(window, text=".", command=lambda: add_to_field("."), width=5, font=("Times New Roman", 14))
 btn_point.grid(row=5, column=2)
 btn_clear = tk.Button(window, text="C", command=lambda: clear(), width=5, font=("Times New Roman", 14))
@@ -210,10 +234,12 @@ btn_fact = tk.Button(window, text="!", command=lambda: factorial(), width=5, fon
 btn_fact.grid(row=6, column=3)
 btn_mod = tk.Button(window, text="%", command=lambda: add_to_field("%"), width=5, font=("Times New Roman", 14))
 btn_mod.grid(row=5, column=3)
+btn_sum = tk.Button(window, text="Σ x^2", command=lambda: calculate_sum(), width=5, font=("Times New Roman", 14))
+btn_sum.grid(row=7, column=3)
 
-btn_stats = tk.Button(window, text="Show Stats", command=lambda: show_statistics(), width=20,
+btn_stats = tk.Button(window, text="Show Stats", command=lambda: show_statistics(), width=10,
                       font=("Times New Roman", 14))
-btn_stats.grid(row=9, column=1, columnspan=4)
+btn_stats.grid(row=9, column=1, columnspan=2)
 
 window.mainloop()
 
