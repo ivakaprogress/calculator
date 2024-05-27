@@ -4,9 +4,6 @@ import math
 import tkinter as tk
 from tkinter import messagebox
 
-# Remove the existing database if it exists on run
-# if os.path.exists('calculator.db'):
-#     os.remove('calculator.db')
 
 conn = sqlite3.connect('calculator.db')
 c = conn.cursor()
